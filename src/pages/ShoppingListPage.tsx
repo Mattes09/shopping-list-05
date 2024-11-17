@@ -16,13 +16,12 @@ import {
 
 const ShoppingListPage: React.FC = () => {
   const [shoppingList, setShoppingList] = useState(mockShoppingList);
-  const [currentUser, setCurrentUser] = useState("John Doe"); // Mocked logged-in user
+  const [currentUser, setCurrentUser] = useState("John Doe");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newItemName, setNewItemName] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(shoppingList.name);
-  const [showResolved, setShowResolved] = useState(false); // Keeping it to control showing/hiding resolved items
-
+  const [showResolved, setShowResolved] = useState(false);
   const handleAddUser = (name: string) => {
     setShoppingList((prevList) => ({
       ...prevList,
@@ -66,7 +65,7 @@ const ShoppingListPage: React.FC = () => {
           { id: Date.now(), name: newItemName.trim(), resolved: false },
         ],
       }));
-      setNewItemName(""); // Clear the input field
+      setNewItemName("");
     }
   };
 
@@ -243,7 +242,7 @@ const ShoppingListPage: React.FC = () => {
             </Typography>
             <ItemList
               items={resolvedItems}
-              onResolve={() => {}} // Resolved items are only deletable
+              onResolve={() => {}}
               onDelete={handleDeleteItem}
             />
           </>
