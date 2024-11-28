@@ -17,7 +17,7 @@ export const shoppingList: ShoppingList = {
   id: 1,
   name: "Sneakers",
   owner: "John Doe",
-  members: ["Jane Doe", "Bob Smith"],
+  members: ["Mates", "Mike"],
   items: [
     { id: 1, name: "New Balance", resolved: false },
     { id: 2, name: "Nike", resolved: false },
