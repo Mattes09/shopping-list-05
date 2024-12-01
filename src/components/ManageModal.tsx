@@ -1,5 +1,16 @@
 import React, { useState } from "react";
-import { Modal, Box, Typography, Button, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
+  TextField,
+  Backdrop,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface ManageModalProps {
   members: string[];
@@ -21,17 +32,12 @@ const ManageModal: React.FC<ManageModalProps> = ({
   const handleAddUser = () => {
     if (newUserName.trim()) {
       onAddUser(newUserName.trim());
-      setNewUserName("");
+      setNewUserName(""); // Clear the input after adding
     }
   };
 
   return (
-    <Modal
-      open
-      onClose={onClose}
-      aria-labelledby="manage-list-title"
-      aria-describedby="manage-list-description"
-    >
+    <Backdrop open={true} sx={{ zIndex: 1300, color: "#fff" }}>
       <Box
         sx={{
           position: "absolute",
@@ -43,26 +49,19 @@ const ManageModal: React.FC<ManageModalProps> = ({
           boxShadow: 24,
           p: 4,
           borderRadius: 2,
+          zIndex: 1400,
+          color: "black", // Ensure all text in the modal is visible
         }}
       >
-        <Typography
-          id="manage-list-title"
-          variant="h6"
-          component="h2"
-          gutterBottom
-        >
+        <Typography variant="h6" gutterBottom>
           Manage List
         </Typography>
 
         {/* Add User Section */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            marginBottom: 3,
-          }}
-        >
+        <Typography variant="subtitle1" gutterBottom>
+          Add User
+        </Typography>
+        <Box sx={{ display: "flex", gap: 1, marginBottom: 2 }}>
           <TextField
             fullWidth
             label="Enter user name"
@@ -70,48 +69,67 @@ const ManageModal: React.FC<ManageModalProps> = ({
             value={newUserName}
             onChange={(e) => setNewUserName(e.target.value)}
           />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddUser}
-            sx={{ flexShrink: 0 }}
-          >
-            Add User
+          <Button variant="contained" onClick={handleAddUser}>
+            Add
           </Button>
         </Box>
 
-        {/* Manage Buttons */}
-        <Box
-          sx={{
-            display: "flex",
-            gap: 2,
-            marginBottom: 2,
-            justifyContent: "center",
-          }}
+        {/* Delete User Section */}
+        <Typography variant="subtitle1" gutterBottom>
+          Delete User
+        </Typography>
+        {members && members.length > 0 ? (
+          <List>
+            {members.map((member, index) => (
+              <ListItem
+                key={index}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  color: "black", // Explicitly set text color to black
+                }}
+              >
+                <ListItemText primary={member} />
+                <IconButton
+                  edge="end"
+                  aria-label="delete"
+                  color="error"
+                  onClick={() => onDeleteUser(member)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          <Typography variant="body2" color="textSecondary">
+            No users in the list.
+          </Typography>
+        )}
+
+        {/* Delete List Section */}
+        <Button
+          variant="contained"
+          color="error"
+          fullWidth
+          sx={{ marginTop: 2 }}
+          onClick={onDeleteList}
         >
-          <Button variant="contained" color="primary" onClick={handleAddUser}>
-            Add User
-          </Button>
-          <Button
-            variant="outlined"
-            color="error"
-            onClick={() => {
-              if (members.length > 0) {
-                onDeleteUser(members[members.length - 1]); // Example: Delete the last user
-              }
-            }}
-          >
-            Delete User
-          </Button>
-          <Button variant="outlined" color="warning" onClick={onDeleteList}>
-            Delete List
-          </Button>
-        </Box>
+          Delete List
+        </Button>
 
-        {/* Close Button */}
-        <Button onClick={onClose}>Close</Button>
+        {/* Close Modal */}
+        <Button
+          variant="outlined"
+          fullWidth
+          sx={{ marginTop: 1 }}
+          onClick={onClose}
+        >
+          Close
+        </Button>
       </Box>
-    </Modal>
+    </Backdrop>
   );
 };
 

@@ -12,6 +12,11 @@ import {
   AppBar,
   Toolbar,
   Divider,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 
 const ShoppingListPage: React.FC = () => {
@@ -22,6 +27,9 @@ const ShoppingListPage: React.FC = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(shoppingList.name);
   const [showResolved, setShowResolved] = useState(false);
+  const [isArchived, setIsArchived] = useState(false);
+  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
+
   const handleAddUser = (name: string) => {
     setShoppingList((prevList) => ({
       ...prevList,
@@ -79,11 +87,9 @@ const ShoppingListPage: React.FC = () => {
     setIsEditingName((prev) => !prev);
   };
 
-  const leaveShoppingList = () => {
-    if (currentUser !== shoppingList.owner) {
-      handleDeleteUser(currentUser);
-      alert(`${currentUser} has left the shopping list.`);
-    }
+  const handleArchiveList = () => {
+    setIsArchived(true); // Mark the list as archived
+    setIsArchiveDialogOpen(false); // Close the dialog
   };
 
   const unresolvedItems = shoppingList.items.filter((item) => !item.resolved);
@@ -123,6 +129,9 @@ const ShoppingListPage: React.FC = () => {
           minHeight: "calc(100vh - 64px)", // Adjust height to account for AppBar
           textAlign: "center",
           padding: 2,
+          filter: isArchived ? "grayscale(1)" : "none", // Grayed-out effect
+          opacity: isArchived ? 0.6 : 1, // Reduce opacity when archived
+          pointerEvents: isArchived ? "none" : "auto", // Disable interactions when archived
         }}
       >
         {/* Edit Name */}
@@ -178,7 +187,7 @@ const ShoppingListPage: React.FC = () => {
             <Button
               variant="contained"
               color="secondary"
-              onClick={leaveShoppingList}
+              onClick={() => alert(`${currentUser} left the list.`)}
             >
               Leave Shopping List
             </Button>
@@ -192,7 +201,11 @@ const ShoppingListPage: React.FC = () => {
               >
                 Manage
               </Button>
-              <Button variant="outlined" color="warning">
+              <Button
+                variant="outlined"
+                color="warning"
+                onClick={() => setIsArchiveDialogOpen(true)}
+              >
                 Archive
               </Button>
             </>
@@ -242,7 +255,7 @@ const ShoppingListPage: React.FC = () => {
             </Typography>
             <ItemList
               items={resolvedItems}
-              onResolve={() => {}}
+              onResolve={handleResolveItem}
               onDelete={handleDeleteItem}
             />
           </>
@@ -258,6 +271,28 @@ const ShoppingListPage: React.FC = () => {
             onClose={() => setIsModalOpen(false)}
           />
         )}
+
+        {/* Archive Confirmation Dialog */}
+        <Dialog
+          open={isArchiveDialogOpen}
+          onClose={() => setIsArchiveDialogOpen(false)}
+        >
+          <DialogTitle>Archive Shopping List</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to archive this shopping list? You will no
+              longer be able to make changes.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsArchiveDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleArchiveList} color="warning">
+              Archive
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Box>
   );
