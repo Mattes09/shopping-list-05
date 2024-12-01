@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Box,
-  Grid,
   Card,
   CardContent,
   Typography,
@@ -35,6 +34,14 @@ const mockShoppingLists: ShoppingList[] = [
     items: [],
     archived: false,
   },
+  {
+    id: 3,
+    name: "Archived Example",
+    owner: "Archived Owner",
+    members: ["Old Member"],
+    items: [],
+    archived: true,
+  },
 ];
 
 const ShoppingListsOverview: React.FC = () => {
@@ -63,7 +70,7 @@ const ShoppingListsOverview: React.FC = () => {
     }
   };
 
-  // Open the delete confirmation dialog
+  // Open delete confirmation dialog
   const handleOpenDeleteDialog = (list: ShoppingList) => {
     setListToDelete(list);
     setDeleteDialogOpen(true);
@@ -80,8 +87,22 @@ const ShoppingListsOverview: React.FC = () => {
     setListToDelete(null);
   };
 
+  // Archive a list
+  const handleArchiveList = (id: number) => {
+    setShoppingLists((prevLists) =>
+      prevLists.map((list) =>
+        list.id === id ? { ...list, archived: true } : list
+      )
+    );
+  };
+
+  // Separate active and archived lists
+  const activeLists = shoppingLists.filter((list) => !list.archived);
+  const archivedLists = shoppingLists.filter((list) => list.archived);
+
   return (
-    <Box sx={{ padding: 2 }}>
+    <Box sx={{ padding: 4, textAlign: "center" }}>
+      {/* Page Title */}
       <Typography variant="h4" gutterBottom>
         Shopping Lists Overview
       </Typography>
@@ -91,44 +112,97 @@ const ShoppingListsOverview: React.FC = () => {
         variant="contained"
         color="primary"
         onClick={() => setIsModalOpen(true)}
-        sx={{ marginBottom: 2 }}
+        sx={{ marginBottom: 4 }}
       >
         Add New List
       </Button>
 
-      {/* Shopping Lists Grid */}
-      <Grid container spacing={3}>
-        {shoppingLists.map((list) => (
-          <Grid item xs={12} sm={6} md={4} key={list.id}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6">{list.name}</Typography>
-                <Typography variant="subtitle2">Owner: {list.owner}</Typography>
-                <Box sx={{ marginTop: 2 }}>
-                  <Button
-                    component={Link}
-                    to={`/list/${list.id}`}
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                  >
-                    View
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    size="small"
-                    onClick={() => handleOpenDeleteDialog(list)}
-                    sx={{ marginLeft: 1 }}
-                  >
-                    Delete
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+      {/* Active Shopping Lists */}
+      <Typography variant="h5" gutterBottom>
+        Active Lists
+      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          gap: 3,
+        }}
+      >
+        {activeLists.map((list) => (
+          <Card key={list.id} sx={{ width: 300 }}>
+            <CardContent>
+              <Typography variant="h6">{list.name}</Typography>
+              <Typography variant="subtitle2">Owner: {list.owner}</Typography>
+              <Box sx={{ marginTop: 2 }}>
+                <Button
+                  component={Link}
+                  to={`/list/${list.id}`}
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                >
+                  View
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  size="small"
+                  sx={{ marginLeft: 1 }}
+                  onClick={() => handleArchiveList(list.id)}
+                >
+                  Archive
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  sx={{ marginLeft: 1 }}
+                  onClick={() => handleOpenDeleteDialog(list)}
+                >
+                  Delete
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
         ))}
-      </Grid>
+      </Box>
+
+      {/* Archived Shopping Lists */}
+      {archivedLists.length > 0 && (
+        <>
+          <Typography variant="h5" gutterBottom sx={{ marginTop: 4 }}>
+            Archived Lists
+          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: 3,
+            }}
+          >
+            {archivedLists.map((list) => (
+              <Card
+                key={list.id}
+                sx={{
+                  width: 300,
+                  bgcolor: "grey.300",
+                  pointerEvents: "none",
+                  opacity: 0.6,
+                }}
+              >
+                <CardContent>
+                  <Typography variant="h6">{list.name}</Typography>
+                  <Typography variant="subtitle2">
+                    Owner: {list.owner}
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        </>
+      )}
 
       {/* Add List Modal */}
       <Modal
