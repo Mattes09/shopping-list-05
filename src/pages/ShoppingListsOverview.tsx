@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Button,
   Modal,
@@ -13,12 +11,12 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import { Link } from "react-router-dom";
 import {
   fetchShoppingLists,
   addShoppingList,
   deleteShoppingList,
 } from "../utils/api";
+import ShoppingListCard from "../components/ShoppingListCard";
 import { ShoppingList } from "../mockData"; // You may still use this for type definitions
 
 const ShoppingListsOverview: React.FC = () => {
@@ -114,7 +112,7 @@ const ShoppingListsOverview: React.FC = () => {
         <>
           {/* Page Title */}
           <Typography variant="h4" gutterBottom>
-            Shopping Lists Overview
+            Shopping Lists
           </Typography>
 
           {/* Add New List Button */}
@@ -140,43 +138,12 @@ const ShoppingListsOverview: React.FC = () => {
             }}
           >
             {activeLists.map((list) => (
-              <Card key={list.id} sx={{ width: 300 }}>
-                <CardContent>
-                  <Typography variant="h6">{list.name}</Typography>
-                  <Typography variant="subtitle2">
-                    Owner: {list.owner}
-                  </Typography>
-                  <Box sx={{ marginTop: 2 }}>
-                    <Button
-                      component={Link}
-                      to={`/list/${list.id}`}
-                      variant="contained"
-                      color="primary"
-                      size="small"
-                    >
-                      View
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      size="small"
-                      sx={{ marginLeft: 1 }}
-                      onClick={() => handleArchiveList(list.id)}
-                    >
-                      Archive
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      size="small"
-                      sx={{ marginLeft: 1 }}
-                      onClick={() => handleOpenDeleteDialog(list)}
-                    >
-                      Delete
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
+              <ShoppingListCard
+                key={list.id}
+                list={list}
+                onArchive={handleArchiveList}
+                onDelete={handleOpenDeleteDialog}
+              />
             ))}
           </Box>
 
@@ -195,22 +162,7 @@ const ShoppingListsOverview: React.FC = () => {
                 }}
               >
                 {archivedLists.map((list) => (
-                  <Card
-                    key={list.id}
-                    sx={{
-                      width: 300,
-                      bgcolor: "grey.300",
-                      pointerEvents: "none",
-                      opacity: 0.6,
-                    }}
-                  >
-                    <CardContent>
-                      <Typography variant="h6">{list.name}</Typography>
-                      <Typography variant="subtitle2">
-                        Owner: {list.owner}
-                      </Typography>
-                    </CardContent>
-                  </Card>
+                  <ShoppingListCard key={list.id} list={list} />
                 ))}
               </Box>
             </>

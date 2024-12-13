@@ -1,11 +1,18 @@
+import { shoppingLists } from "../mockData";
+
 const BASE_URL = "http://localhost:3001";
 
 export async function fetchShoppingLists() {
-  const response = await fetch(`${BASE_URL}/shoppingLists`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch shopping lists.");
+  try {
+    const response = await fetch(`${BASE_URL}/shoppingLists`);
+    if (!response.ok) {
+      throw new Error();
+    }
+    return response.json();
+  } catch {
+    console.warn("Server unavailable, falling back to mock data.");
+    return shoppingLists; // Use mock data on failure
   }
-  return response.json();
 }
 
 export async function addShoppingList(newList: any) {

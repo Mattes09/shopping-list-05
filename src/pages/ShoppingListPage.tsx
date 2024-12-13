@@ -1,5 +1,11 @@
-import React, { useState } from "react";
-import { shoppingList as mockShoppingList } from "../mockData";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  fetchShoppingLists,
+  updateShoppingList,
+  deleteShoppingList,
+} from "../utils/api";
+import { shoppingLists as mockShoppingLists, ShoppingList } from "../mockData";
 import ItemList from "../components/ItemList";
 import ManageModal from "../components/ManageModal";
 import {
@@ -7,220 +13,239 @@ import {
   Button,
   Typography,
   TextField,
-  MenuItem,
-  Select,
   AppBar,
   Toolbar,
+  CircularProgress,
   Divider,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
 } from "@mui/material";
 
 const ShoppingListPage: React.FC = () => {
-  const [shoppingList, setShoppingList] = useState(mockShoppingList);
-  const [currentUser, setCurrentUser] = useState("John Doe");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [shoppingList, setShoppingList] = useState<ShoppingList | null>(null);
+  const [mockData, setMockData] = useState<ShoppingList[]>([]); // Local mock data
+  const [isMock, setIsMock] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [newItemName, setNewItemName] = useState("");
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [editedName, setEditedName] = useState(shoppingList.name);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [showResolved, setShowResolved] = useState(false);
-  const [isArchived, setIsArchived] = useState(false);
-  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
 
-  const handleAddUser = (name: string) => {
-    setShoppingList((prevList) => ({
-      ...prevList,
-      members: [...prevList.members, name],
-    }));
-  };
+  useEffect(() => {
+    const loadShoppingList = async () => {
+      setIsLoading(true);
+      setError(null);
 
-  const handleDeleteUser = (name: string) => {
-    setShoppingList((prevList) => ({
-      ...prevList,
-      members: prevList.members.filter((member) => member !== name),
-    }));
-  };
+      try {
+        const data = await fetchShoppingLists();
+        const foundList = data.find(
+          (list: { id: string | undefined }) => list.id === id
+        );
+        if (foundList) {
+          setShoppingList(foundList);
+          setIsMock(false);
+        } else {
+          throw new Error("Shopping list not found on the server.");
+        }
+      } catch {
+        // Fallback to mock data
+        const localMockData = JSON.parse(JSON.stringify(mockShoppingLists)); // Deep copy
+        setMockData(localMockData);
+        const fallbackList = localMockData.find(
+          (list: ShoppingList) => list.id.toString() === id
+        );
+        if (fallbackList) {
+          setShoppingList(fallbackList);
+          setIsMock(true);
+        } else {
+          setError("Shopping list not found in mock data either.");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleDeleteList = () => {
-    alert("List deleted! (Placeholder action)");
-  };
+    loadShoppingList();
+  }, [id]);
 
-  const handleResolveItem = (id: number) => {
-    setShoppingList((prevList) => ({
-      ...prevList,
-      items: prevList.items.map((item) =>
-        item.id === id ? { ...item, resolved: !item.resolved } : item
-      ),
-    }));
-  };
-
-  const handleDeleteItem = (id: number) => {
-    setShoppingList((prevList) => ({
-      ...prevList,
-      items: prevList.items.filter((item) => item.id !== id),
-    }));
+  const updateMockData = (updatedList: ShoppingList) => {
+    const updatedMockData = mockData.map((list) =>
+      list.id === updatedList.id ? updatedList : list
+    );
+    setMockData(updatedMockData);
+    setShoppingList(updatedList);
   };
 
   const handleAddItem = () => {
-    if (newItemName.trim()) {
-      setShoppingList((prevList) => ({
-        ...prevList,
-        items: [
-          ...prevList.items,
-          { id: Date.now(), name: newItemName.trim(), resolved: false },
-        ],
-      }));
-      setNewItemName("");
+    if (!newItemName.trim() || !shoppingList) return;
+
+    const newItem = {
+      id: Date.now(),
+      name: newItemName.trim(),
+      resolved: false,
+    };
+    const updatedList = {
+      ...shoppingList,
+      items: [...shoppingList.items, newItem],
+    };
+
+    if (isMock) {
+      updateMockData(updatedList);
+    } else {
+      updateShoppingList(shoppingList.id, updatedList)
+        .then(() => setShoppingList(updatedList))
+        .catch(() => setError("Failed to add item."));
+    }
+    setNewItemName("");
+  };
+
+  const handleResolveItem = (itemId: number) => {
+    if (!shoppingList) return;
+
+    const updatedList = {
+      ...shoppingList,
+      items: shoppingList.items.map((item) =>
+        item.id === itemId ? { ...item, resolved: !item.resolved } : item
+      ),
+    };
+
+    if (isMock) {
+      updateMockData(updatedList);
+    } else {
+      updateShoppingList(shoppingList.id, updatedList)
+        .then(() => setShoppingList(updatedList))
+        .catch(() => setError("Failed to resolve item."));
     }
   };
 
-  const toggleEditName = () => {
-    if (isEditingName && editedName.trim()) {
-      setShoppingList((prevList) => ({
-        ...prevList,
-        name: editedName.trim(),
-      }));
+  const handleDeleteItem = (itemId: number) => {
+    if (!shoppingList) return;
+
+    const updatedList = {
+      ...shoppingList,
+      items: shoppingList.items.filter((item) => item.id !== itemId),
+    };
+
+    if (isMock) {
+      updateMockData(updatedList);
+    } else {
+      updateShoppingList(shoppingList.id, updatedList)
+        .then(() => setShoppingList(updatedList))
+        .catch(() => setError("Failed to delete item."));
     }
-    setIsEditingName((prev) => !prev);
   };
 
-  const handleArchiveList = () => {
-    setIsArchived(true); // Mark the list as archived
-    setIsArchiveDialogOpen(false); // Close the dialog
+  const handleAddUser = (userName: string) => {
+    if (!userName.trim() || !shoppingList) return;
+
+    const updatedList = {
+      ...shoppingList,
+      members: [...shoppingList.members, userName.trim()],
+    };
+
+    if (isMock) {
+      updateMockData(updatedList);
+    } else {
+      updateShoppingList(shoppingList.id, updatedList)
+        .then(() => setShoppingList(updatedList))
+        .catch(() => setError("Failed to add user."));
+    }
   };
 
-  const unresolvedItems = shoppingList.items.filter((item) => !item.resolved);
-  const resolvedItems = shoppingList.items.filter((item) => item.resolved);
+  const handleDeleteUser = (userName: string) => {
+    if (!shoppingList || !shoppingList.members.includes(userName)) return;
+
+    const updatedList = {
+      ...shoppingList,
+      members: shoppingList.members.filter((member) => member !== userName),
+    };
+
+    if (isMock) {
+      updateMockData(updatedList);
+    } else {
+      updateShoppingList(shoppingList.id, updatedList)
+        .then(() => setShoppingList(updatedList))
+        .catch(() => setError("Failed to delete user."));
+    }
+  };
+
+  const handleDeleteList = () => {
+    if (!shoppingList) return;
+
+    if (isMock) {
+      setMockData(mockData.filter((list) => list.id !== shoppingList.id));
+      navigate("/");
+    } else {
+      deleteShoppingList(shoppingList.id)
+        .then(() => navigate("/"))
+        .catch(() => setError("Failed to delete shopping list."));
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", padding: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", padding: 4 }}>
+        <Typography color="error">{error}</Typography>
+      </Box>
+    );
+  }
+
+  const visibleItems = showResolved
+    ? shoppingList?.items
+    : shoppingList?.items.filter((item) => !item.resolved);
 
   return (
     <Box>
-      {/* App Bar with User Dropdown */}
       <AppBar position="static">
-        <Toolbar sx={{ justifyContent: "flex-end" }}>
-          <Select
-            value={currentUser}
-            onChange={(e) => setCurrentUser(e.target.value as string)}
-            sx={{
-              color: "white",
-              background: "rgba(255, 255, 255, 0.1)",
-              borderRadius: 1,
-            }}
-          >
-            <MenuItem value="John Doe">John Doe (Owner)</MenuItem>
-            {shoppingList.members.map((member) => (
-              <MenuItem key={member} value={member}>
-                {member}
-              </MenuItem>
-            ))}
-          </Select>
+        <Toolbar sx={{ justifyContent: "space-between" }}>
+          <Button color="inherit" onClick={() => navigate("/")}>
+            Home
+          </Button>
+          <Typography variant="h6">Shopping List</Typography>
         </Toolbar>
       </AppBar>
 
-      {/* Main Content */}
       <Box
         sx={{
+          padding: 4,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
-          minHeight: "calc(100vh - 64px)", // Adjust height to account for AppBar
-          textAlign: "center",
-          padding: 2,
-          filter: isArchived ? "grayscale(1)" : "none", // Grayed-out effect
-          opacity: isArchived ? 0.6 : 1, // Reduce opacity when archived
-          pointerEvents: isArchived ? "none" : "auto", // Disable interactions when archived
         }}
       >
-        {/* Edit Name */}
-        {isEditingName && shoppingList.owner === currentUser ? (
-          <Box sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
-            <TextField
-              value={editedName}
-              onChange={(e) => setEditedName(e.target.value)}
-              variant="outlined"
-              size="small"
-              sx={{ marginRight: 1 }}
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={toggleEditName}
-            >
-              Save
-            </Button>
-          </Box>
-        ) : (
-          <Typography
-            variant="h4"
-            component="h1"
-            gutterBottom
-            onClick={
-              shoppingList.owner === currentUser ? toggleEditName : undefined
-            }
-            sx={{
-              cursor:
-                shoppingList.owner === currentUser ? "pointer" : "default",
-              ":hover":
-                shoppingList.owner === currentUser
-                  ? { textDecoration: "underline" }
-                  : undefined,
-            }}
-          >
-            {shoppingList.name}
-          </Typography>
-        )}
-
-        {/* Owner and Users */}
+        <Typography variant="h4" gutterBottom>
+          {shoppingList?.name}
+        </Typography>
         <Typography variant="subtitle1">
-          <strong>Owner:</strong> {shoppingList.owner}
+          <strong>Owner:</strong> {shoppingList?.owner}
         </Typography>
-        <Typography variant="subtitle1" gutterBottom>
-          <strong>Users:</strong> {shoppingList.members.join(", ")}
+        <Typography variant="subtitle1">
+          <strong>Members:</strong> {shoppingList?.members.join(", ")}
         </Typography>
 
-        {/* Buttons */}
-        <Box sx={{ display: "flex", gap: 2, marginBottom: 2 }}>
-          {currentUser !== shoppingList.owner && (
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => alert(`${currentUser} left the list.`)}
-            >
-              Leave Shopping List
-            </Button>
-          )}
-          {currentUser === shoppingList.owner && (
-            <>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => setIsModalOpen(true)}
-              >
-                Manage
-              </Button>
-              <Button
-                variant="outlined"
-                color="warning"
-                onClick={() => setIsArchiveDialogOpen(true)}
-              >
-                Archive
-              </Button>
-            </>
-          )}
+        <Box sx={{ display: "flex", gap: 2, marginY: 3 }}>
+          <Button variant="contained" onClick={() => setIsModalOpen(true)}>
+            Manage Members
+          </Button>
           <Button
             variant="outlined"
-            color="secondary"
             onClick={() => setShowResolved((prev) => !prev)}
           >
             {showResolved ? "Hide Resolved Items" : "Show Resolved Items"}
           </Button>
         </Box>
 
-        {/* Add Item */}
-        <Box sx={{ width: "100%", maxWidth: 500, marginBottom: 2 }}>
+        <Divider sx={{ marginY: 4, width: "100%" }} />
+
+        <Box sx={{ width: "100%", maxWidth: 600 }}>
           <TextField
             fullWidth
             label="Add a new item"
@@ -229,40 +254,23 @@ const ShoppingListPage: React.FC = () => {
             onChange={(e) => setNewItemName(e.target.value)}
             sx={{ marginBottom: 2 }}
           />
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            onClick={handleAddItem}
-          >
+          <Button variant="contained" fullWidth onClick={handleAddItem}>
             Add Item
           </Button>
         </Box>
 
-        {/* Unresolved Items */}
-        <ItemList
-          items={unresolvedItems}
-          onResolve={handleResolveItem}
-          onDelete={handleDeleteItem}
-        />
+        <Box sx={{ marginTop: 4, width: "100%", maxWidth: 600 }}>
+          <Typography variant="h6" gutterBottom>
+            Items
+          </Typography>
+          <ItemList
+            items={visibleItems || []}
+            onResolve={handleResolveItem}
+            onDelete={handleDeleteItem}
+          />
+        </Box>
 
-        {/* Resolved Items Section */}
-        {showResolved && resolvedItems.length > 0 && (
-          <>
-            <Divider sx={{ marginY: 3 }} />
-            <Typography variant="h5" gutterBottom>
-              Resolved Items
-            </Typography>
-            <ItemList
-              items={resolvedItems}
-              onResolve={handleResolveItem}
-              onDelete={handleDeleteItem}
-            />
-          </>
-        )}
-
-        {/* Manage Modal */}
-        {isModalOpen && currentUser === shoppingList.owner && (
+        {isModalOpen && shoppingList && (
           <ManageModal
             members={shoppingList.members}
             onAddUser={handleAddUser}
@@ -271,28 +279,6 @@ const ShoppingListPage: React.FC = () => {
             onClose={() => setIsModalOpen(false)}
           />
         )}
-
-        {/* Archive Confirmation Dialog */}
-        <Dialog
-          open={isArchiveDialogOpen}
-          onClose={() => setIsArchiveDialogOpen(false)}
-        >
-          <DialogTitle>Archive Shopping List</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Are you sure you want to archive this shopping list? You will no
-              longer be able to make changes.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setIsArchiveDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleArchiveList} color="warning">
-              Archive
-            </Button>
-          </DialogActions>
-        </Dialog>
       </Box>
     </Box>
   );
