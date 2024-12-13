@@ -1,0 +1,47 @@
+{
+  "shoppingLists": [
+    {
+      "id": 1,
+      "name": "Sneakers",
+      "owner": "John Doe",
+      "members": [
+        "Mates",
+        "Mike"
+      ],
+      "items": [
+        {
+          "id": 1,
+          "name": "New Balance",
+          "resolved": false
+        },
+        {
+          "id": 2,
+          "name": "Nike",
+          "resolved": false
+        },
+        {
+          "id": 3,
+          "name": "ASICS",
+          "resolved": true
+        }
+      ],
+      "archived": false
+    },
+    {
+      "id": 1734102029121,
+      "name": "Mates",
+      "owner": "Current User",
+      "members": [],
+      "items": [],
+      "archived": false
+    },
+    {
+      "id": 1734102039521,
+      "name": "Cigans",
+      "owner": "Current User",
+      "members": [],
+      "items": [],
+      "archived": false
+    }
+  ]
+}
