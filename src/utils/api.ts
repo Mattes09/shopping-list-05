@@ -11,39 +11,69 @@ export async function fetchShoppingLists() {
     return response.json();
   } catch {
     console.warn("Server unavailable, falling back to mock data.");
-    return shoppingLists; // Use mock data on failure
+    return [...shoppingLists]; // Return a copy of mock data to avoid mutations
   }
 }
 
 export async function addShoppingList(newList: any) {
-  const response = await fetch(`${BASE_URL}/shoppingLists`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(newList),
-  });
-  if (!response.ok) {
-    throw new Error("Failed to add shopping list.");
+  try {
+    const response = await fetch(`${BASE_URL}/shoppingLists`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newList),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to add shopping list.");
+    }
+    return response.json();
+  } catch {
+    console.warn("Server unavailable, adding to mock data.");
+    const mockId = Math.floor(Math.random() * 1000000) + 1;
+    const addedList = { ...newList, id: mockId };
+
+    // Check for duplicates before adding
+    const exists = shoppingLists.some((list) => list.id === mockId);
+    if (!exists) {
+      shoppingLists.push(addedList); // Add to mock data if unique
+    }
+    return addedList;
   }
-  return response.json();
 }
 
 export async function updateShoppingList(id: number, updatedList: any) {
-  const response = await fetch(`${BASE_URL}/shoppingLists/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(updatedList),
-  });
-  if (!response.ok) {
-    throw new Error("Failed to update shopping list.");
+  try {
+    const response = await fetch(`${BASE_URL}/shoppingLists/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedList),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to update shopping list.");
+    }
+    return response.json();
+  } catch {
+    console.warn("Server unavailable, updating mock data.");
+    const index = shoppingLists.findIndex((list) => list.id === id);
+    if (index > -1) {
+      shoppingLists[index] = updatedList;
+    }
+    return updatedList;
   }
-  return response.json();
 }
 
 export async function deleteShoppingList(id: number) {
-  const response = await fetch(`${BASE_URL}/shoppingLists/${id}`, {
-    method: "DELETE",
-  });
-  if (!response.ok) {
-    throw new Error("Failed to delete shopping list.");
+  try {
+    const response = await fetch(`${BASE_URL}/shoppingLists/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error("Failed to delete shopping list.");
+    }
+  } catch {
+    console.warn("Server unavailable, deleting from mock data.");
+    const index = shoppingLists.findIndex((list) => list.id === id);
+    if (index > -1) {
+      shoppingLists.splice(index, 1);
+    }
   }
 }
