@@ -1,3 +1,17 @@
+# JSON SERVER 
+To use JSON server for testin the server calls please use : json-server --watch db.json --port 3001
+App is setup so that it works with JSON server as a mock server. Data are then updated in db.json file
+If the server is not online , APP works with mockData.ts 
+
+
+
+
+
+
+
+
+
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
