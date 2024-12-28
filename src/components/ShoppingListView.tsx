@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { shoppingLists } from "../mockData";
 import { ShoppingList } from "../mockData";
+import { useTranslation } from "react-i18next";
 
 const mockShoppingList: ShoppingList = shoppingLists[0];
 
 const ShoppingListView: React.FC = () => {
+  const { t } = useTranslation();
   const [shoppingList, setShoppingList] =
     useState<ShoppingList>(mockShoppingList);
   const [showResolved, setShowResolved] = useState(false);
@@ -66,7 +68,7 @@ const ShoppingListView: React.FC = () => {
   };
 
   const handleDeleteList = () => {
-    alert("List deleted! (Placeholder for delete functionality)");
+    alert(t("List deleted! (Placeholder for delete functionality)"));
   };
 
   const toggleModal = () => {
@@ -84,24 +86,26 @@ const ShoppingListView: React.FC = () => {
     <div className="container mt-4">
       <h1 className="mb-4">{shoppingList.name}</h1>
       <div className="mb-3">
-        <strong>Owner:</strong> {shoppingList.owner}
+        <strong>{t("Owner")}:</strong> {shoppingList.owner}
       </div>
       <div className="mb-3">
-        <strong>Users:</strong> {shoppingList.members.join(", ")}
+        <strong>{t("Users")}:</strong> {shoppingList.members.join(", ")}
       </div>
       <div className="mb-4">
-        <h3>Items</h3>
+        <h3>{t("Items")}</h3>
         <button onClick={toggleResolvedView}>
-          {showResolved ? "Hide Resolved Items" : "Show Resolved Items"}
+          {showResolved ? t("Hide Resolved Items") : t("Show Resolved Items")}
         </button>
         <ul>
           {visibleItems.map((item) => (
             <li key={item.id}>
               {item.name}
               <button onClick={() => handleResolveItem(item.id)}>
-                Resolve
+                {t("Resolve")}
               </button>
-              <button onClick={() => handleDeleteItem(item.id)}>Delete</button>
+              <button onClick={() => handleDeleteItem(item.id)}>
+                {t("Delete")}
+              </button>
             </li>
           ))}
         </ul>
@@ -109,13 +113,13 @@ const ShoppingListView: React.FC = () => {
           type="text"
           value={newItemName}
           onChange={(e) => setNewItemName(e.target.value)}
-          placeholder="Add a new item"
+          placeholder={t("Add a new item")}
         />
-        <button onClick={handleAddItem}>Add Item</button>
+        <button onClick={handleAddItem}>{t("Add Item")}</button>
       </div>
       <div>
-        <button onClick={toggleModal}>Manage</button>
-        <button onClick={handleDeleteList}>Delete List</button>
+        <button onClick={toggleModal}>{t("Manage")}</button>
+        <button onClick={handleDeleteList}>{t("Delete List")}</button>
       </div>
 
       {isModalOpen && (
@@ -123,10 +127,10 @@ const ShoppingListView: React.FC = () => {
           {!modalSection && (
             <>
               <button onClick={() => setModalSection("addUser")}>
-                Add User
+                {t("Add User")}
               </button>
               <button onClick={() => setModalSection("deleteUser")}>
-                Delete User
+                {t("Delete User")}
               </button>
             </>
           )}
@@ -136,9 +140,9 @@ const ShoppingListView: React.FC = () => {
                 type="text"
                 value={newUserName}
                 onChange={(e) => setNewUserName(e.target.value)}
-                placeholder="Add a new user"
+                placeholder={t("Add a new user")}
               />
-              <button onClick={handleAddUser}>Add</button>
+              <button onClick={handleAddUser}>{t("Add")}</button>
             </div>
           )}
           {modalSection === "deleteUser" && (
@@ -146,7 +150,9 @@ const ShoppingListView: React.FC = () => {
               {shoppingList.members.map((user) => (
                 <li key={user}>
                   {user}
-                  <button onClick={() => handleDeleteUser(user)}>Delete</button>
+                  <button onClick={() => handleDeleteUser(user)}>
+                    {t("Delete")}
+                  </button>
                 </li>
               ))}
             </ul>

@@ -2,6 +2,7 @@ import React from "react";
 import { List, ListItem, ListItemText, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { useTranslation } from "react-i18next";
 
 interface Item {
   id: number;
@@ -16,6 +17,8 @@ interface ItemListProps {
 }
 
 const ItemList: React.FC<ItemListProps> = ({ items, onResolve, onDelete }) => {
+  const { t } = useTranslation();
+
   return (
     <List>
       {items.map((item) => (
@@ -27,13 +30,18 @@ const ItemList: React.FC<ItemListProps> = ({ items, onResolve, onDelete }) => {
             <IconButton
               onClick={() => onResolve(item.id)}
               sx={{ color: "green" }}
+              title={t("Resolve")}
             >
               <CheckCircleIcon />
             </IconButton>
           )}
 
           {/* Delete Button for both Resolved and Unresolved Items */}
-          <IconButton onClick={() => onDelete(item.id)} sx={{ color: "red" }}>
+          <IconButton
+            onClick={() => onDelete(item.id)}
+            sx={{ color: "red" }}
+            title={t("Delete")}
+          >
             <DeleteIcon />
           </IconButton>
         </ListItem>

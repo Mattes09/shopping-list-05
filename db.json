@@ -1,127 +1,60 @@
 {
   "shoppingLists": [
     {
-      "id": "05fc",
-      "name": "Shoes",
-      "owner": "Current User",
-      "members": ["Mates", "Joseph", "Adam", "Marek"],
-      "items": [
-        {
-          "id": 1734270070520,
-          "name": "Dr Martens",
-          "resolved": false
-        },
-        {
-          "id": 1734270074071,
-          "name": "Nike",
-          "resolved": false
-        },
-        {
-          "id": 1734270077437,
-          "name": "Adidas",
-          "resolved": false
-        },
-        {
-          "id": 1734270081569,
-          "name": "New Balance",
-          "resolved": false
-        },
-        {
-          "id": 1734270084853,
-          "name": "Puma",
-          "resolved": true
-        }
-      ],
-      "archived": false
-    },
-    {
-      "id": "e77b",
-      "name": "Groceries",
-      "owner": "Current User",
-      "members": ["Mates"],
-      "items": [
-        {
-          "id": 1734270129770,
-          "name": "Apple",
-          "resolved": false
-        },
-        {
-          "id": 1734270131920,
-          "name": "Cheese",
-          "resolved": false
-        },
-        {
-          "id": 1734270134150,
-          "name": "Ham",
-          "resolved": true
-        },
-        {
-          "id": 1734270159834,
-          "name": "Asparagus",
-          "resolved": true
-        },
-        {
-          "id": 1734270164736,
-          "name": "Bread",
-          "resolved": true
-        },
-        {
-          "id": 1734270169268,
-          "name": "Coke",
-          "resolved": false
-        },
-        {
-          "id": 1734270173186,
-          "name": "Sparkling Wine",
-          "resolved": true
-        }
-      ],
-      "archived": false
-    },
-    {
       "id": "15de",
       "name": "New Year's",
       "owner": "Current User",
-      "members": [],
+      "members": [
+        "Tset"
+      ],
       "items": [
         {
           "id": 1734270215619,
           "name": "Red Wine",
-          "resolved": false
+          "resolved": true
         },
         {
           "id": 1734270235735,
           "name": "Sauvignon blanc - New Zeland",
-          "resolved": false
+          "resolved": true
         },
         {
           "id": 1734270257552,
           "name": "Riesling - French",
-          "resolved": false
+          "resolved": true
         },
         {
           "id": 1734270277170,
           "name": "Chopin Vodka",
-          "resolved": false
-        },
-        {
-          "id": 1734270282701,
-          "name": "Grapefruit",
-          "resolved": false
-        },
-        {
-          "id": 1734270285103,
-          "name": "Tonic",
-          "resolved": false
+          "resolved": true
         },
         {
           "id": 1734270289204,
           "name": "Sparkling Water",
-          "resolved": false
+          "resolved": true
         },
         {
           "id": 1734270292485,
           "name": "Limes",
+          "resolved": false
+        }
+      ],
+      "archived": false
+    },
+    {
+      "id": "1036",
+      "name": "Test",
+      "owner": "Current User",
+      "members": [],
+      "items": [
+        {
+          "id": 1735383087424,
+          "name": "Mates",
+          "resolved": false
+        },
+        {
+          "id": 1735383089707,
+          "name": "asd",
           "resolved": false
         }
       ],

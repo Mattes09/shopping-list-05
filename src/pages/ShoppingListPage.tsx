@@ -13,17 +13,17 @@ import {
   Button,
   Typography,
   TextField,
-  AppBar,
-  Toolbar,
   CircularProgress,
   Divider,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 const ShoppingListPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [shoppingList, setShoppingList] = useState<ShoppingList | null>(null);
-  const [mockData, setMockData] = useState<ShoppingList[]>([]); // Local mock data
+  const [mockData, setMockData] = useState<ShoppingList[]>([]);
   const [isMock, setIsMock] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +31,7 @@ const ShoppingListPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showResolved, setShowResolved] = useState(false);
 
+  // Load the shopping list
   useEffect(() => {
     const loadShoppingList = async () => {
       setIsLoading(true);
@@ -45,10 +46,9 @@ const ShoppingListPage: React.FC = () => {
           setShoppingList(foundList);
           setIsMock(false);
         } else {
-          throw new Error("Shopping list not found on the server.");
+          throw new Error(t("Shopping list not found on the server."));
         }
       } catch {
-        // Fallback to mock data
         const localMockData = JSON.parse(JSON.stringify(mockShoppingLists)); // Deep copy
         setMockData(localMockData);
         const fallbackList = localMockData.find(
@@ -58,7 +58,7 @@ const ShoppingListPage: React.FC = () => {
           setShoppingList(fallbackList);
           setIsMock(true);
         } else {
-          setError("Shopping list not found in mock data either.");
+          setError(t("Shopping list not found in mock data either."));
         }
       } finally {
         setIsLoading(false);
@@ -66,8 +66,9 @@ const ShoppingListPage: React.FC = () => {
     };
 
     loadShoppingList();
-  }, [id]);
+  }, [id, t]);
 
+  // Update mock data
   const updateMockData = (updatedList: ShoppingList) => {
     const updatedMockData = mockData.map((list) =>
       list.id === updatedList.id ? updatedList : list
@@ -76,6 +77,7 @@ const ShoppingListPage: React.FC = () => {
     setShoppingList(updatedList);
   };
 
+  // Add a new item
   const handleAddItem = () => {
     if (!newItemName.trim() || !shoppingList) return;
 
@@ -94,11 +96,12 @@ const ShoppingListPage: React.FC = () => {
     } else {
       updateShoppingList(shoppingList.id, updatedList)
         .then(() => setShoppingList(updatedList))
-        .catch(() => setError("Failed to add item."));
+        .catch(() => setError(t("Failed to add item.")));
     }
     setNewItemName("");
   };
 
+  // Resolve an item
   const handleResolveItem = (itemId: number) => {
     if (!shoppingList) return;
 
@@ -114,10 +117,11 @@ const ShoppingListPage: React.FC = () => {
     } else {
       updateShoppingList(shoppingList.id, updatedList)
         .then(() => setShoppingList(updatedList))
-        .catch(() => setError("Failed to resolve item."));
+        .catch(() => setError(t("Failed to resolve item.")));
     }
   };
 
+  // Delete an item
   const handleDeleteItem = (itemId: number) => {
     if (!shoppingList) return;
 
@@ -131,10 +135,11 @@ const ShoppingListPage: React.FC = () => {
     } else {
       updateShoppingList(shoppingList.id, updatedList)
         .then(() => setShoppingList(updatedList))
-        .catch(() => setError("Failed to delete item."));
+        .catch(() => setError(t("Failed to delete item.")));
     }
   };
 
+  // Manage members
   const handleAddUser = (userName: string) => {
     if (!userName.trim() || !shoppingList) return;
 
@@ -148,7 +153,7 @@ const ShoppingListPage: React.FC = () => {
     } else {
       updateShoppingList(shoppingList.id, updatedList)
         .then(() => setShoppingList(updatedList))
-        .catch(() => setError("Failed to add user."));
+        .catch(() => setError(t("Failed to add user.")));
     }
   };
 
@@ -165,7 +170,7 @@ const ShoppingListPage: React.FC = () => {
     } else {
       updateShoppingList(shoppingList.id, updatedList)
         .then(() => setShoppingList(updatedList))
-        .catch(() => setError("Failed to delete user."));
+        .catch(() => setError(t("Failed to delete user.")));
     }
   };
 
@@ -178,10 +183,16 @@ const ShoppingListPage: React.FC = () => {
     } else {
       deleteShoppingList(shoppingList.id)
         .then(() => navigate("/"))
-        .catch(() => setError("Failed to delete shopping list."));
+        .catch(() => setError(t("Failed to delete shopping list.")));
     }
   };
 
+  // Filter visible items
+  const visibleItems = showResolved
+    ? shoppingList?.items
+    : shoppingList?.items.filter((item) => !item.resolved);
+
+  // Render
   if (isLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", padding: 4 }}>
@@ -198,88 +209,73 @@ const ShoppingListPage: React.FC = () => {
     );
   }
 
-  const visibleItems = showResolved
-    ? shoppingList?.items
-    : shoppingList?.items.filter((item) => !item.resolved);
-
   return (
-    <Box>
-      <AppBar position="static">
-        <Toolbar sx={{ justifyContent: "space-between" }}>
-          <Button color="inherit" onClick={() => navigate("/")}>
-            Home
-          </Button>
-          <Typography variant="h6">Shopping List</Typography>
-        </Toolbar>
-      </AppBar>
+    <Box
+      sx={{
+        padding: 4,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
+      <Typography variant="h4" gutterBottom>
+        {shoppingList?.name}
+      </Typography>
+      <Typography variant="subtitle1">
+        <strong>{t("Owner")}:</strong> {shoppingList?.owner}
+      </Typography>
+      <Typography variant="subtitle1">
+        <strong>{t("Members")}:</strong> {shoppingList?.members.join(", ")}
+      </Typography>
 
-      <Box
-        sx={{
-          padding: 4,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h4" gutterBottom>
-          {shoppingList?.name}
-        </Typography>
-        <Typography variant="subtitle1">
-          <strong>Owner:</strong> {shoppingList?.owner}
-        </Typography>
-        <Typography variant="subtitle1">
-          <strong>Members:</strong> {shoppingList?.members.join(", ")}
-        </Typography>
-
-        <Box sx={{ display: "flex", gap: 2, marginY: 3 }}>
-          <Button variant="contained" onClick={() => setIsModalOpen(true)}>
-            Manage Members
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={() => setShowResolved((prev) => !prev)}
-          >
-            {showResolved ? "Hide Resolved Items" : "Show Resolved Items"}
-          </Button>
-        </Box>
-
-        <Divider sx={{ marginY: 4, width: "100%" }} />
-
-        <Box sx={{ width: "100%", maxWidth: 600 }}>
-          <TextField
-            fullWidth
-            label="Add a new item"
-            variant="outlined"
-            value={newItemName}
-            onChange={(e) => setNewItemName(e.target.value)}
-            sx={{ marginBottom: 2 }}
-          />
-          <Button variant="contained" fullWidth onClick={handleAddItem}>
-            Add Item
-          </Button>
-        </Box>
-
-        <Box sx={{ marginTop: 4, width: "100%", maxWidth: 600 }}>
-          <Typography variant="h6" gutterBottom>
-            Items
-          </Typography>
-          <ItemList
-            items={visibleItems || []}
-            onResolve={handleResolveItem}
-            onDelete={handleDeleteItem}
-          />
-        </Box>
-
-        {isModalOpen && shoppingList && (
-          <ManageModal
-            members={shoppingList.members}
-            onAddUser={handleAddUser}
-            onDeleteUser={handleDeleteUser}
-            onDeleteList={handleDeleteList}
-            onClose={() => setIsModalOpen(false)}
-          />
-        )}
+      <Box sx={{ display: "flex", gap: 2, marginY: 3 }}>
+        <Button variant="contained" onClick={() => setIsModalOpen(true)}>
+          {t("Manage Members")}
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => setShowResolved((prev) => !prev)}
+        >
+          {showResolved ? t("Hide Resolved Items") : t("Show Resolved Items")}
+        </Button>
       </Box>
+
+      <Divider sx={{ marginY: 4, width: "100%" }} />
+
+      <Box sx={{ width: "100%", maxWidth: 600 }}>
+        <TextField
+          fullWidth
+          label={t("Add a new item")}
+          variant="outlined"
+          value={newItemName}
+          onChange={(e) => setNewItemName(e.target.value)}
+          sx={{ marginBottom: 2 }}
+        />
+        <Button variant="contained" fullWidth onClick={handleAddItem}>
+          {t("Add Item")}
+        </Button>
+      </Box>
+
+      <Box sx={{ marginTop: 4, width: "100%", maxWidth: 600 }}>
+        <Typography variant="h6" gutterBottom>
+          {t("Items")}
+        </Typography>
+        <ItemList
+          items={visibleItems || []}
+          onResolve={handleResolveItem}
+          onDelete={handleDeleteItem}
+        />
+      </Box>
+
+      {isModalOpen && shoppingList && (
+        <ManageModal
+          members={shoppingList.members}
+          onAddUser={handleAddUser}
+          onDeleteUser={handleDeleteUser}
+          onDeleteList={handleDeleteList}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
     </Box>
   );
 };

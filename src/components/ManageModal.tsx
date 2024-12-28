@@ -9,8 +9,10 @@ import {
   IconButton,
   TextField,
   Backdrop,
+  useTheme,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useTranslation } from "react-i18next";
 
 interface ManageModalProps {
   members: string[];
@@ -28,6 +30,8 @@ const ManageModal: React.FC<ManageModalProps> = ({
   onClose,
 }) => {
   const [newUserName, setNewUserName] = useState("");
+  const theme = useTheme(); // Access the current theme
+  const { t } = useTranslation(); // Access the translation function
 
   const handleAddUser = () => {
     if (newUserName.trim()) {
@@ -37,7 +41,7 @@ const ManageModal: React.FC<ManageModalProps> = ({
   };
 
   return (
-    <Backdrop open={true} sx={{ zIndex: 1300, color: "#fff" }}>
+    <Backdrop open={true} sx={{ zIndex: 1300 }}>
       <Box
         sx={{
           position: "absolute",
@@ -45,38 +49,37 @@ const ManageModal: React.FC<ManageModalProps> = ({
           left: "50%",
           transform: "translate(-50%, -50%)",
           width: 400,
-          bgcolor: "background.paper",
+          bgcolor: "background.paper", // Dynamically set based on theme
           boxShadow: 24,
           p: 4,
           borderRadius: 2,
-          zIndex: 1400,
-          color: "black", // Ensure all text in the modal is visible
+          color: "text.primary", // Ensure text color adapts to theme
         }}
       >
         <Typography variant="h6" gutterBottom>
-          Manage List
+          {t("Manage List")}
         </Typography>
 
         {/* Add User Section */}
         <Typography variant="subtitle1" gutterBottom>
-          Add User
+          {t("Add User")}
         </Typography>
         <Box sx={{ display: "flex", gap: 1, marginBottom: 2 }}>
           <TextField
             fullWidth
-            label="Enter user name"
+            label={t("Enter user name")}
             variant="outlined"
             value={newUserName}
             onChange={(e) => setNewUserName(e.target.value)}
           />
           <Button variant="contained" onClick={handleAddUser}>
-            Add
+            {t("Add")}
           </Button>
         </Box>
 
         {/* Delete User Section */}
         <Typography variant="subtitle1" gutterBottom>
-          Delete User
+          {t("Delete User")}
         </Typography>
         {members && members.length > 0 ? (
           <List>
@@ -87,7 +90,6 @@ const ManageModal: React.FC<ManageModalProps> = ({
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  color: "black", // Explicitly set text color to black
                 }}
               >
                 <ListItemText primary={member} />
@@ -104,7 +106,7 @@ const ManageModal: React.FC<ManageModalProps> = ({
           </List>
         ) : (
           <Typography variant="body2" color="textSecondary">
-            No users in the list.
+            {t("No users in the list.")}
           </Typography>
         )}
 
@@ -116,7 +118,7 @@ const ManageModal: React.FC<ManageModalProps> = ({
           sx={{ marginTop: 2 }}
           onClick={onDeleteList}
         >
-          Delete List
+          {t("Delete List")}
         </Button>
 
         {/* Close Modal */}
@@ -126,7 +128,7 @@ const ManageModal: React.FC<ManageModalProps> = ({
           sx={{ marginTop: 1 }}
           onClick={onClose}
         >
-          Close
+          {t("Close")}
         </Button>
       </Box>
     </Backdrop>

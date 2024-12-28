@@ -17,9 +17,12 @@ import {
   deleteShoppingList,
 } from "../utils/api";
 import ShoppingListCard from "../components/ShoppingListCard";
-import { ShoppingList } from "../mockData"; // You may still use this for type definitions
+import { ShoppingList } from "../mockData";
+import { useTranslation } from "react-i18next";
+import i18n from "i18next";
 
 const ShoppingListsOverview: React.FC = () => {
+  const { t } = useTranslation();
   const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newListName, setNewListName] = useState("");
@@ -28,21 +31,35 @@ const ShoppingListsOverview: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch shopping lists from the server
+  // Fetch shopping lists on initial load
   useEffect(() => {
+    let isMounted = true;
+
     async function loadShoppingLists() {
       try {
         setIsLoading(true);
         const data = await fetchShoppingLists();
-        setShoppingLists(data);
+        if (isMounted) setShoppingLists(data);
       } catch (err) {
-        setError("Failed to load shopping lists.");
+        if (isMounted) setError(t("Failed to load shopping lists."));
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     }
+
     loadShoppingLists();
-  }, []);
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Run only once on component mount
+
+  // Update error messages when language changes
+  useEffect(() => {
+    if (error) {
+      setError(t("Failed to load shopping lists."));
+    }
+  }, [i18n.language]); // React to language changes
 
   // Add a new shopping list
   const handleAddList = async () => {
@@ -50,7 +67,7 @@ const ShoppingListsOverview: React.FC = () => {
       try {
         const newList = {
           name: newListName.trim(),
-          owner: "Current User",
+          owner: t("Current User"),
           members: [],
           items: [],
           archived: false,
@@ -61,7 +78,7 @@ const ShoppingListsOverview: React.FC = () => {
         setNewListName("");
         setIsModalOpen(false);
       } catch {
-        setError("Failed to add shopping list.");
+        setError(t("Failed to add shopping list."));
       }
     }
   };
@@ -81,7 +98,7 @@ const ShoppingListsOverview: React.FC = () => {
           prevLists.filter((list) => list.id !== listToDelete.id)
         );
       } catch {
-        setError("Failed to delete shopping list.");
+        setError(t("Failed to delete shopping list."));
       } finally {
         setDeleteDialogOpen(false);
         setListToDelete(null);
@@ -105,14 +122,14 @@ const ShoppingListsOverview: React.FC = () => {
   return (
     <Box sx={{ padding: 4, textAlign: "center" }}>
       {isLoading ? (
-        <Typography>Loading shopping lists...</Typography>
+        <Typography>{t("Loading shopping lists...")}</Typography>
       ) : error ? (
         <Typography color="error">{error}</Typography>
       ) : (
         <>
           {/* Page Title */}
           <Typography variant="h4" gutterBottom>
-            Shopping Lists
+            {t("Shopping Lists")}
           </Typography>
 
           {/* Add New List Button */}
@@ -122,12 +139,12 @@ const ShoppingListsOverview: React.FC = () => {
             onClick={() => setIsModalOpen(true)}
             sx={{ marginBottom: 4 }}
           >
-            Add New List
+            {t("Add New List")}
           </Button>
 
           {/* Active Shopping Lists */}
           <Typography variant="h5" gutterBottom>
-            Active Lists
+            {t("Active Lists")}
           </Typography>
           <Box
             sx={{
@@ -151,7 +168,7 @@ const ShoppingListsOverview: React.FC = () => {
           {archivedLists.length > 0 && (
             <>
               <Typography variant="h5" gutterBottom sx={{ marginTop: 4 }}>
-                Archived Lists
+                {t("Archived Lists")}
               </Typography>
               <Box
                 sx={{
@@ -188,11 +205,11 @@ const ShoppingListsOverview: React.FC = () => {
               }}
             >
               <Typography id="add-list-modal" variant="h6" gutterBottom>
-                Add New Shopping List
+                {t("Add New Shopping List")}
               </Typography>
               <TextField
                 fullWidth
-                label="List Name"
+                label={t("List Name")}
                 value={newListName}
                 onChange={(e) => setNewListName(e.target.value)}
                 sx={{ marginBottom: 2 }}
@@ -203,7 +220,7 @@ const ShoppingListsOverview: React.FC = () => {
                 fullWidth
                 onClick={handleAddList}
               >
-                Add List
+                {t("Add List")}
               </Button>
             </Box>
           </Modal>
@@ -213,17 +230,19 @@ const ShoppingListsOverview: React.FC = () => {
             open={deleteDialogOpen}
             onClose={() => setDeleteDialogOpen(false)}
           >
-            <DialogTitle>Delete Shopping List</DialogTitle>
+            <DialogTitle>{t("Delete Shopping List")}</DialogTitle>
             <DialogContent>
               <DialogContentText>
-                Are you sure you want to delete the shopping list{" "}
+                {t("Are you sure you want to delete the shopping list")}{" "}
                 <strong>{listToDelete?.name}</strong>?
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+              <Button onClick={() => setDeleteDialogOpen(false)}>
+                {t("Cancel")}
+              </Button>
               <Button color="error" onClick={handleDeleteList}>
-                Delete
+                {t("Delete")}
               </Button>
             </DialogActions>
           </Dialog>

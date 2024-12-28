@@ -2,6 +2,7 @@ import React from "react";
 import { Card, CardContent, Typography, Box, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { ShoppingList } from "../mockData";
+import { useTranslation } from "react-i18next";
 
 interface ShoppingListCardProps {
   list: ShoppingList;
@@ -14,6 +15,7 @@ const ShoppingListCard: React.FC<ShoppingListCardProps> = ({
   onArchive,
   onDelete,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleView = () => {
@@ -21,28 +23,40 @@ const ShoppingListCard: React.FC<ShoppingListCardProps> = ({
   };
 
   return (
-    <Card key={list.id} sx={{ width: 300 }}>
+    <Card key={list.id} sx={{ width: 300, margin: "auto" }}>
       <CardContent>
-        <Typography variant="h6">{list.name}</Typography>
-        <Typography variant="subtitle2">Owner: {list.owner}</Typography>
-        <Box sx={{ marginTop: 2 }}>
+        <Typography variant="h6" align="center">
+          {list.name}
+        </Typography>
+        <Typography variant="subtitle2" align="center" sx={{ marginBottom: 2 }}>
+          {t("Owner")}: {list.owner}
+        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 1,
+            flexWrap: "wrap", // Wrap buttons for smaller screens
+          }}
+        >
           <Button
             variant="contained"
             color="primary"
             size="small"
+            sx={{ minWidth: 90 }}
             onClick={handleView}
           >
-            View
+            {t("View")}
           </Button>
           {onArchive && (
             <Button
               variant="outlined"
               color="secondary"
               size="small"
-              sx={{ marginLeft: 1 }}
+              sx={{ minWidth: 90 }}
               onClick={() => onArchive(list.id)}
             >
-              Archive
+              {t("Archive")}
             </Button>
           )}
           {onDelete && (
@@ -50,10 +64,10 @@ const ShoppingListCard: React.FC<ShoppingListCardProps> = ({
               variant="outlined"
               color="error"
               size="small"
-              sx={{ marginLeft: 1 }}
+              sx={{ minWidth: 90 }}
               onClick={() => onDelete(list)}
             >
-              Delete
+              {t("Delete")}
             </Button>
           )}
         </Box>
